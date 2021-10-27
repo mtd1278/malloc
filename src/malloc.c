@@ -220,5 +220,5 @@ void free(void *ptr)
 
    /* TODO: Coalesce free _blocks if needed */
 }
-
+/* 7f704d5f-9811-4b91-a918-57c1bb646b70       --------------------------------*/
 /* vim: set expandtab sts=3 sw=3 ts=6 ft=cpp: --------------------------------*/

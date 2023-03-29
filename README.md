@@ -43,7 +43,7 @@ Fit has already been implemented for you).
 * Total amount of memory requested
 * Maximum size of the heap
 
-The code will print these statistics ( THESE STATS ARE FAKE) upon exit and should look like similar to:
+The code will print the statistics ( THESE STATS ARE FAKE) upon exit and should look like similar to:
 ```
 mallocs: 8
 frees: 8

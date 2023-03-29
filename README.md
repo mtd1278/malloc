@@ -58,7 +58,7 @@ max heap: 4096
 
 You will need to increment these counters where appropriate.
 
-4. Four test programs are provided to help debug your code. They are located in the tests
+4. Eight test programs are provided to help debug your code. They are located in the tests
 directory.
 5. Implement realloc and calloc.
 
@@ -66,7 +66,14 @@ directory.
 * Performance
 * Heap 
 * Max heap size
-7. A report must be generated with the findings.  
+7. A report must be generated with the findings.  At a minimum the report must contain:
+* Executive summary
+* Description of the algorithms implemented.
+* Test implementation
+* Test results for all five candidates ( malloc and your four algorithm implementations )
+* Explanation and interpretation of the results including any anomalies in the test results.
+* Conclusion.
+The report must be submitted as a PDF file.  Any other formats will result in a grade of 0 for the report.
 The rubric for grading your report is contained within the rubric directory.
 
 ## Important Warning

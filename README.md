@@ -62,7 +62,7 @@ You will need to increment these counters where appropriate.
 directory.
 5. Implement realloc and calloc.
 
-6. You must also benchmark your four implementations of an allocator against the standard system call malloc(). Design and develop a suite of programs and capture execution time for your four implementations of the arena allocator and compare their performance against the same programs using malloc(). At a minimum your suite of tests must evaluate the programs based on:
+6. You must also benchmark your four implementations of an allocator against the standard system call malloc(). **Design and develop a suite of programs and capture execution time for your four implementations of the arena allocator and compare their performance against the same programs using malloc()**. At a minimum your suite of tests must evaluate the programs based on:
 * Performance
 * Relative comparision of number of splits and heap growth
 * Heap fragmentation

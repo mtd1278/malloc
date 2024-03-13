@@ -102,6 +102,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Next Fit code in this #ifdef block
 #if defined NEXT && NEXT == 0
    /** \TODO Implement next fit here */
+   
 #endif
 
    return curr;
@@ -169,7 +170,7 @@ struct _block *growHeap(struct _block *last, size_t size)
  */
 void *malloc(size_t size) 
 {
-
+   num_requested = size;
    if( atexit_registered == 0 )
    {
       atexit_registered = 1;
@@ -196,6 +197,26 @@ void *malloc(size_t size)
             If the leftover space in the new block is less than the sizeof(_block)+4 then
             don't split the block.
    */
+   /*from lecture 2.26 
+      1. 25, next point at 3.
+      2. 500
+      3. 25, free = false, next point at end of 4. 
+      4. 475 
+      if leftover space, 1. 25. 2. size = 1000
+      save next to temp next 
+      set ptr->size = requested size : this shrinks 1000 to 500 
+      set old size = ptr->size
+      ptr->next = (struct _block*)(long long)ptr->next - (oldsize - size), so now next points to the end of 500
+      ptr->next = (struct _block)((long long)ptr->next + size)
+      ptr->next->inuse = false 
+      ptr->next->next = oldnext
+      ptr->next->size = oldsize - size - sizeof(struct _block)
+      */
+   if (next->size > (size + sizeof(struct _block)+4))
+   {
+      
+
+   }
 
    /* Could not find free _block, so grow heap */
    if (next == NULL) 
@@ -211,7 +232,7 @@ void *malloc(size_t size)
    
    /* Mark _block as in use */
    next->free = false;
-
+   num_mallocs++;
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
 }
@@ -237,21 +258,68 @@ void free(void *ptr)
    struct _block *curr = BLOCK_HEADER(ptr);
    assert(curr->free == 0);
    curr->free = true;
+   num_frees++;
 
+   /* lecture 2.26
+   struct _block *heap_ptr = heapList;
+   int largest = 0;
+   printf("Heap contents\n");
+   while (heap_ptr)
+   {
+      printf("Size: %d InUse %d\n,", (int)heap_ptr->size, heap_ptr->free); 
+      if (heap_ptr->size > largest)
+      {
+         largest = heap_ptr->size;
+      }
+      heap_ptr = heap_ptr->next;
+   }
+   
+   */
    /* TODO: Coalesce free _blocks.  If the next block or previous block 
             are free then combine them with this block being freed.
    */
+   while (curr != NULL && curr->next != NULL)
+   {
+      if (curr->free && curr->next->free)
+      {
+         curr->size = curr->size + sizeof(struct _block*) + curr->next->size;
+         curr = curr->next;
+         num_coalesces ++;
+      }
+      curr = curr->next;
+   }
 }
 
 void *calloc( size_t nmemb, size_t size )
 {
+   // man calloc: allocate space for nmemb objects that are size bytes
+   // returns ptr to allocated mem, mem is bytes of 0 
+   // get amount then call malloc then set each byte to 0
    // \TODO Implement calloc
-   return NULL;
+
+   size_t amount = nmemb * size;
+   char *ptr = (char*)malloc(amount);
+   int i;
+   for (i = 0; i < amount; i++)
+   {
+      ptr[i] = 0;
+   }
+   return (void*)ptr;
 }
 
 void *realloc( void *ptr, size_t size )
 {
+   // man realloc: change size of ptr, returns ptr
+   // creates new allocation, copies old data pointed to by ptr as will fit, 
+   // frees the old allocation
+   // if ptr is NULL, realloc is idental to malloc 
+   // if size - 0 and ptr is not NULL, a new, minimum sized object is allocated and the original object is freed
    // \TODO Implement realloc
+   if (ptr == NULL)
+   {
+      ptr = malloc(size);
+   }
+   
    return NULL;
 }
 

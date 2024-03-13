@@ -14,10 +14,10 @@ static int atexit_registered = 0;
 static int num_mallocs       = 0;
 static int num_frees         = 0;
 static int num_reuses        = 0;
-static int num_grows         = 0;
+static int num_grows         = 0; // # of requests for new block
 static int num_splits        = 0;
 static int num_coalesces     = 0;
-static int num_blocks        = 0;
+static int num_blocks        = 0; // num of blocks in free list 
 static int num_requested     = 0;
 static int max_heap          = 0;
 
@@ -92,16 +92,61 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Best Fit code in this #ifdef block
 #if defined BEST && BEST == 0
    /** \TODO Implement best fit here */
+   while (curr)
+   {
+      while ((!(curr->free) && curr->size >= size))
+      {
+         *last = curr;
+         curr = curr->next;
+         if (curr->free && curr->size >= size)
+         {
+            while (curr->size > curr->next->size && !(curr->next->free))
+            {
+               *last = curr;
+               curr = curr->next;
+            }
+
+         }
+      }
+   }
+
 #endif
 
 // \TODO Put your Worst Fit code in this #ifdef block
 #if defined WORST && WORST == 0
    /** \TODO Implement worst fit here */
+   while (curr)
+   {
+      while ((!(curr->free) && curr->size >= size))
+      {
+         *last = curr;
+         curr = curr->next;
+         if (curr->free && curr->size >= size)
+         {
+            while (curr->size < curr->next->size && !(curr->next->free))
+            {
+               *last = curr;
+               curr = curr->next;
+            }
+
+         }
+      }
+   }
+
 #endif
 
 // \TODO Put your Next Fit code in this #ifdef block
 #if defined NEXT && NEXT == 0
    /** \TODO Implement next fit here */
+   if (*last != NULL) // need to start where it left off
+   {
+      curr = (*last)->next; // curr point to one after last
+   }
+   while (curr && !(curr->free && curr->size >= size)) // if *last->next not available
+   {
+      *last = curr; // move last to curr 
+      curr = curr->next; // move curr to next
+   }
    
 #endif
 
@@ -212,6 +257,7 @@ void *malloc(size_t size)
       ptr->next->next = oldnext
       ptr->next->size = oldsize - size - sizeof(struct _block)
       */
+   
    if (next->size > (size + sizeof(struct _block)+4))
    {
       
@@ -234,7 +280,7 @@ void *malloc(size_t size)
    next->free = false;
    num_mallocs++;
    num_blocks++;
-   max_heap = num_blocks;
+
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
 }
@@ -317,12 +363,10 @@ void *realloc( void *ptr, size_t size )
    // if ptr is NULL, realloc is idental to malloc 
    // if size - 0 and ptr is not NULL, a new, minimum sized object is allocated and the original object is freed
    // \TODO Implement realloc
-   if (ptr == NULL)
-   {
-      ptr = malloc(size);
-   }
-   
-   return NULL;
+   void *newPtr = malloc(size);
+   memcpy(newPtr, ptr, size);
+   free(ptr);
+   return newPtr;
 }
 
 

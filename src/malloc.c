@@ -233,6 +233,8 @@ void *malloc(size_t size)
    /* Mark _block as in use */
    next->free = false;
    num_mallocs++;
+   num_blocks++;
+   max_heap = num_blocks;
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
 }

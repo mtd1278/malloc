@@ -92,22 +92,35 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Best Fit code in this #ifdef block
 #if defined BEST && BEST == 0
    /** \TODO Implement best fit here */
-   while (curr)
+   /*while (curr && !(curr->free && curr->size >= size) )
    {
-      while ((!(curr->free) && curr->size >= size))
+      if (curr->free && curr->size >= size)
       {
-         *last = curr;
-         curr = curr->next;
-         if (curr->free && curr->size >= size)
+         while (curr->next && curr->size < curr->next->size && !(curr->next->free))
          {
-            while (curr->size > curr->next->size && !(curr->next->free))
-            {
-               *last = curr;
-               curr = curr->next;
-            }
-
+            *last = curr;
+            curr = curr->next;
          }
       }
+      else
+      {
+         return NULL;
+      }
+   }*/
+   struct _block *bestFit = NULL;
+   size_t smallest = -1;
+   while (curr)
+   {
+      if (curr->free && curr->size >= size)
+      {
+         if (curr->size < smallest)
+         {
+            smallest = curr->size;
+            bestFit = curr;
+         }
+      }
+      *last = curr;
+      curr = curr->next;
    }
 
 #endif
@@ -115,20 +128,16 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Worst Fit code in this #ifdef block
 #if defined WORST && WORST == 0
    /** \TODO Implement worst fit here */
+   // struct _block *worstFit = NULL;
+   // size_t largest = 0;
    while (curr)
    {
-      while ((!(curr->free) && curr->size >= size))
+      if (curr->free && curr->size >= size)
       {
-         *last = curr;
-         curr = curr->next;
-         if (curr->free && curr->size >= size)
+         while (curr->next && curr->size > curr->next->size && !(curr->next->free))
          {
-            while (curr->size < curr->next->size && !(curr->next->free))
-            {
-               *last = curr;
-               curr = curr->next;
-            }
-
+            *last = curr;
+            curr = curr->next;
          }
       }
    }
@@ -215,7 +224,7 @@ struct _block *growHeap(struct _block *last, size_t size)
  */
 void *malloc(size_t size) 
 {
-   num_requested = size;
+   num_requested += size;
    if( atexit_registered == 0 )
    {
       atexit_registered = 1;
@@ -279,7 +288,10 @@ void *malloc(size_t size)
    /* Mark _block as in use */
    next->free = false;
    num_mallocs++;
-   num_blocks++;
+   size_t totalSize = 0;
+   totalSize += size;
+
+   max_heap = totalSize + 1024;
 
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);

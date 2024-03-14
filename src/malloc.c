@@ -225,6 +225,8 @@ struct _block *growHeap(struct _block *last, size_t size)
 void *malloc(size_t size) 
 {
    num_requested += size;
+   max_heap += size; 
+   num_grows++; // Number of times we request a new block
    if( atexit_registered == 0 )
    {
       atexit_registered = 1;
@@ -252,27 +254,27 @@ void *malloc(size_t size)
             don't split the block.
    */
    /*from lecture 2.26 
-      1. 25, next point at 3.
-      2. 500
-      3. 25, free = false, next point at end of 4. 
-      4. 475 
-      if leftover space, 1. 25. 2. size = 1000
       save next to temp next 
-      set ptr->size = requested size : this shrinks 1000 to 500 
-      set old size = ptr->size
+      set next->size = requested size : this shrinks 1000 to 500 
       ptr->next = (struct _block*)(long long)ptr->next - (oldsize - size), so now next points to the end of 500
       ptr->next = (struct _block)((long long)ptr->next + size)
       ptr->next->inuse = false 
       ptr->next->next = oldnext
       ptr->next->size = oldsize - size - sizeof(struct _block)
       */
-   
-   if (next->size > (size + sizeof(struct _block)+4))
+   if (next)
    {
-      
-
+      if (next->size > (size + sizeof(struct _block)+4)) // if size of found block is larger than requested size 
+      {
+         struct _block *tempPtr = next->next;
+         next->next = (struct _block*)((long long)next - size - sizeof(struct _block));
+         next->next->free = true;
+         next->next->next = tempPtr;
+         next->next->size = next->size - size - sizeof(struct _block);
+         num_splits++;
+         num_reuses++;
+      }
    }
-
    /* Could not find free _block, so grow heap */
    if (next == NULL) 
    {
@@ -288,10 +290,6 @@ void *malloc(size_t size)
    /* Mark _block as in use */
    next->free = false;
    num_mallocs++;
-   size_t totalSize = 0;
-   totalSize += size;
-
-   max_heap = totalSize + 1024;
 
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
@@ -307,6 +305,7 @@ void *malloc(size_t size)
  *
  * \return none
  */
+
 void free(void *ptr) 
 {
    if (ptr == NULL) 
@@ -319,7 +318,7 @@ void free(void *ptr)
    assert(curr->free == 0);
    curr->free = true;
    num_frees++;
-
+   
    /* lecture 2.26
    struct _block *heap_ptr = heapList;
    int largest = 0;

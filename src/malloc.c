@@ -31,8 +31,13 @@ static int max_heap          = 0;
  *
  *  \return none
  */
-void printStatistics( void )
+/*void printStatistics( void )
 {
+   struct _block *finalList = heapList;
+      while(finalList && finalList->next)
+      {
+         num_blocks++;
+      }
   printf("\nheap management statistics\n");
   printf("mallocs:\t%d\n", num_mallocs );
   printf("frees:\t\t%d\n", num_frees );
@@ -43,12 +48,13 @@ void printStatistics( void )
   printf("blocks:\t\t%d\n", num_blocks );
   printf("requested:\t%d\n", num_requested );
   printf("max heap:\t%d\n", max_heap );
-}
+}*/
 
 struct _block 
 {
    size_t  size;         /* Size of the allocated _block of memory in bytes */
    struct _block *next;  /* Pointer to the next _block of allocated memory  */
+   struct _block *prev;
    bool   free;          /* Is this _block free?                            */
    char   padding[3];    /* Padding: IENTRTMzMjAgU3jMDEED                   */
 };
@@ -160,6 +166,7 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
  */
 struct _block *growHeap(struct _block *last, size_t size) 
 {
+   max_heap += size;
    /* Request more space from OS */
    struct _block *curr = (struct _block *)sbrk(0);
    struct _block *prev = (struct _block *)sbrk(sizeof(struct _block) + size);
@@ -206,6 +213,25 @@ struct _block *growHeap(struct _block *last, size_t size)
  * \return returns the requested memory allocation to the calling process 
  * or NULL if failed
  */
+ void printStatistics( void )
+{
+   struct _block *finalList = heapList;
+   while(finalList && finalList->next)
+   {
+      num_blocks++;
+      finalList = finalList->next;
+   }
+  printf("\nheap management statistics\n");
+  printf("mallocs:\t%d\n", num_mallocs );
+  printf("frees:\t\t%d\n", num_frees );
+  printf("reuses:\t\t%d\n", num_reuses );
+  printf("grows:\t\t%d\n", num_grows );
+  printf("splits:\t\t%d\n", num_splits );
+  printf("coalesces:\t%d\n", num_coalesces );
+  printf("blocks:\t\t%d\n", num_blocks );
+  printf("requested:\t%d\n", num_requested );
+  printf("max heap:\t%d\n", max_heap );
+}
 void *malloc(size_t size) 
 {
    num_requested += size;
@@ -229,6 +255,7 @@ void *malloc(size_t size)
 
    struct _block *last = heapList;
    struct _block *next = findFreeBlock(&last, size);
+
 
    /* TODO: If the block found by findFreeBlock is larger than we need then:
             If the leftover space in the new block is greater than the sizeof(_block)+4 then
@@ -320,18 +347,18 @@ void free(void *ptr)
    /* TODO: Coalesce free _blocks.  If the next block or previous block 
             are free then combine them with this block being freed.
    */
-   while (curr != NULL && curr->next != NULL)
+   curr = heapList;
+   while(curr && curr->next) 
    {
-      if (curr->free && curr->next->free)
+      if(curr->free && curr->next->free) 
       {
-         curr->size = curr->size + sizeof(struct _block*) + curr->next->size;
-         curr = curr->next;
-         num_coalesces ++;
+         curr->size += curr->next->size + sizeof(struct _block);
+         curr->next = curr->next->next;
+         num_coalesces++;
       }
-      curr = curr->next;
+   curr = curr->next;
    }
 }
-
 void *calloc( size_t nmemb, size_t size )
 {
    // man calloc: allocate space for nmemb objects that are size bytes
@@ -362,6 +389,7 @@ void *realloc( void *ptr, size_t size )
    free(ptr);
    return newPtr;
 }
+
 
 
 

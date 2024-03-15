@@ -282,13 +282,16 @@ void *malloc(size_t size)
          next->next->next = tempPtr;
          next->next->size = next->size - size - sizeof(struct _block);
          num_splits++;
-         num_reuses++;
       }
    }
    /* Could not find free _block, so grow heap */
    if (next == NULL) 
    {
       next = growHeap(last, size);
+   }
+   else
+   {
+      num_reuses++;
    }
 
    /* Could not find free _block or grow heap, so just return NULL */

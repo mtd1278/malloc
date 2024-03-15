@@ -93,21 +93,6 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
 // \TODO Put your Best Fit code in this #ifdef block
 #if defined BEST && BEST == 0
    /** \TODO Implement best fit here */
-   /*while (curr && !(curr->free && curr->size >= size) )
-   {
-      if (curr->free && curr->size >= size)
-      {
-         while (curr->next && curr->size < curr->next->size && !(curr->next->free))
-         {
-            *last = curr;
-            curr = curr->next;
-         }
-      }
-      else
-      {
-         return NULL;
-      }
-   }*/
    size_t smallest = SIZE_MAX;
    struct _block *bestFitBlock = NULL;
    while (curr)
@@ -141,7 +126,6 @@ struct _block *findFreeBlock(struct _block **last, size_t size)
    }
    return worstFitBlock;
    
-
 #endif
 
 // \TODO Put your Next Fit code in this #ifdef block
@@ -225,7 +209,6 @@ struct _block *growHeap(struct _block *last, size_t size)
 void *malloc(size_t size) 
 {
    num_requested += size;
-   max_heap += size; 
    num_grows++; // Number of times we request a new block
    if( atexit_registered == 0 )
    {
@@ -267,7 +250,7 @@ void *malloc(size_t size)
       if (next->size > (size + sizeof(struct _block)+4)) // if size of found block is larger than requested size 
       {
          struct _block *tempPtr = next->next;
-         next->next = (struct _block*)((long long)next - size - sizeof(struct _block));
+         next->next = (struct _block*) ((char*)BLOCK_DATA(next)+size);
          next->next->free = true;
          next->next->next = tempPtr;
          next->next->size = next->size - size - sizeof(struct _block);
@@ -290,7 +273,7 @@ void *malloc(size_t size)
    /* Mark _block as in use */
    next->free = false;
    num_mallocs++;
-
+   
    /* Return data address associated with _block to the user */
    return BLOCK_DATA(next);
 }

@@ -4,42 +4,56 @@
 
 int main()
 {
-    // Performance, Relative comparision of number of splits and heap growth, Heap fragmentation, Max heap size, RUN TIME
+    
+    // must split, coalesce, resuse 
     clock_t start, end;
     double totalRuntime;
-    start = clock();
     printf("Running test program \n");
-
-    char* first_ptr_array[100000]; // 100k
-    int i;
-    for (i = 0; i < 100000; i++)
+    start = clock();
+    char* ptr1 = (char*)malloc(1000);
+    
+    char* first_ptr_array[80000]; 
+    int i; 
+    for (i = 0; i < 80000; i++)
     {
-        first_ptr_array[i] = (char*)malloc(2000);
+        if (i%2 == 0)
+        {
+            first_ptr_array[i] = (char*)malloc(2000);
+        }
+        else
+        {
+             first_ptr_array[i] = (char*)malloc(1000);
+        }
         first_ptr_array[i] =first_ptr_array[i];
+        
     }
+    free(ptr1);
+    free(first_ptr_array[3]);
+    free(first_ptr_array[7]);
+    char* ptr2 = (char*)malloc(3000);
 
-    for (i = 0; i < 5000; i++)
+    for (i = 0; i < 80000; i++)
     {
-        if (i%2 == 3)
+        if (i%5 == 0 || i%8 == 0)
         {
             free(first_ptr_array[i]);
         }
-    }
 
-    char* ptr1 = (char*)malloc(1000);
-    free(ptr1);
-    char* second_ptr_array[500000]; // 2mil 
-    for (i = 0; i < 500000; i++)
-    {
-        second_ptr_array[i] = (char*)malloc(1500);
-        second_ptr_array[i] =second_ptr_array[i];
     }
-    for (i = 0; i < 500000; i++)
+   
+    
+    for (i = 0; i < 80000; i++)
     {
-        if (i%2 != 0)
+        if (i%5 == 0)
         {
-            free(second_ptr_array[i]);
+            first_ptr_array[i] = (char*)malloc(500);
         }
+        else if(i%8 == 0)
+        {
+            first_ptr_array[i] = (char*)malloc(1000);
+        }
+        first_ptr_array[i] =first_ptr_array[i];
+        
     }
 
     end = clock();
